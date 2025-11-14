@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="text-2xl font-bold mb-2 text-[color:var(--c-n900)]">Loan Recommendation Assistant</h2>
+<p class="text-[color:var(--c-n500)] mb-4">Get personalized loan options from leading NBFCs based on your financial insights.</p>
+
+<div data-animate="slide-up" class="bg-white rounded-xl p-6 border border-neutral-200 mb-6 shadow-sm">
+  <h3 class="font-semibold mb-3 text-[color:var(--c-n900)]">NBFCs</h3>
+  <div class="flex flex-wrap gap-2">
+    {% for name in nbfcs %}
+      <span class="px-3 py-1 rounded-full bg-neutral-100 border border-neutral-200 text-sm">{{ name }}</span>
+    {% endfor %}
+  </div>
+  </div>
+
+<form data-animate="slide-up" method="post" class="bg-white p-6 rounded-xl border border-neutral-200 mb-6 shadow-sm">
+  {% csrf_token %}
+  <label class="block text-sm text-[color:var(--c-n500)] mb-1">Ask a question</label>
+  <input name="prompt" class="w-full px-3 py-2 rounded-lg bg-white border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-[color:var(--c-primary)] focus:border-[color:var(--c-primary)]" placeholder="e.g., Can I get a personal loan? What tenure and APR?" />
+  <button class="mt-3 px-4 py-2 rounded-lg bg-[color:var(--c-primary)] text-white hover:bg-[color:var(--c-primary-light)] hover:text-[color:var(--c-n900)] transition-colors">Ask</button>
+  <div class="text-xs text-[color:var(--c-n500)] mt-2">Tip: You can also use the Smart Assistant (bottom-right).</div>
+</form>
+
+{% if reply %}
+<div data-animate="slide-up" class="bg-neutral-50 border border-neutral-200 p-4 rounded-xl whitespace-pre-wrap shadow-sm">{{ reply }}</div>
+{% endif %}
+{% endblock %}

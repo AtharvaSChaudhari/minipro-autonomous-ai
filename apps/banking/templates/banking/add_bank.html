@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load form_tags %}
+{% block content %}
+<h2 class="text-2xl font-bold mb-6 text-[var(--c-n900)]">Link your bank account</h2>
+<form method="post" class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white rounded-xl p-6 border border-neutral-200 shadow-sm">
+  {% csrf_token %}
+  {% for field in form %}
+    <div>
+      <label class="block text-xs text-[var(--c-n500)] mb-1">{{ field.label }}</label>
+      {{ field|add_class:"w-full px-3 py-2 rounded-lg bg-white border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-[var(--c-primary)] focus:border-[var(--c-primary)]" }}
+      <div class="text-[var(--c-danger)] text-xs mt-1">{{ field.errors }}</div>
+    </div>
+  {% endfor %}
+  <div class="md:col-span-2">
+    <button class="px-6 py-3 rounded-lg bg-[var(--c-primary)] text-white hover:bg-[var(--c-primary-light)] hover:text-[var(--c-n900)] transition-colors" type="submit">Connect</button>
+  </div>
+</form>
+{% if messages %}
+<ul class="mt-4 space-y-1">
+  {% for message in messages %}
+    <li class="text-sm text-[var(--c-n900)]">{{ message }}</li>
+  {% endfor %}
+</ul>
+{% endif %}
+{% endblock %}

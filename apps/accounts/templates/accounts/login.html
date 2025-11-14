@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load form_tags %}
+{% block content %}
+<section class="min-h-[70vh] grid place-items-center rounded-xl p-6 bg-gradient-to-br from-[#002970] to-[#0050d4]">
+  <div id="loginCard" class="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 md:p-8 transition-all duration-300">
+    <div class="flex items-center gap-2 mb-4">
+      <svg class="w-6 h-6 text-[var(--c-primary)]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 12c2.21 0 4-1.79 4-4S14.21 4 12 4 8 5.79 8 8s1.79 4 4 4zm0 2c-3.31 0-6 2.69-6 6h2a4 4 0 018 0h2c0-3.31-2.69-6-6-6z"/></svg>
+      <h1 class="text-2xl font-extrabold text-[var(--c-n900)]">Welcome back</h1>
+    </div>
+    <p class="text-sm text-[var(--c-n500)] mb-6">Login to continue to your dashboard.</p>
+
+    <form id="loginForm" method="post" class="space-y-4">
+      {% csrf_token %}
+      <div>
+        <label class="block text-xs text-[var(--c-n500)] mb-1">Username</label>
+        <input type="text" name="username" class="w-full px-3 py-2 rounded-lg border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-[var(--c-primary)] focus:border-[var(--c-primary)] transition" required />
+      </div>
+      <div>
+        <label class="block text-xs text-[var(--c-n500)] mb-1">Password</label>
+        <input type="password" name="password" class="w-full px-3 py-2 rounded-lg border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-[var(--c-primary)] focus:border-[var(--c-primary)] transition" required />
+      </div>
+      <button class="w-full px-4 py-2.5 rounded-lg bg-[var(--c-primary)] text-white hover:bg-[var(--c-primary-light)] hover:text-[var(--c-n900)] transition-colors" type="submit">Login</button>
+    </form>
+
+    <div class="mt-4 text-sm text-center text-[var(--c-n500)]">
+      New here?
+      <button id="toSignup" class="underline decoration-[var(--c-primary)] underline-offset-4 hover:text-[var(--c-primary)] transition">Create an account</button>
+    </div>
+  </div>
+</section>
+
+<script>
+(function(){
+  const card = document.getElementById('loginCard');
+  const toSignup = document.getElementById('toSignup');
+  toSignup?.addEventListener('click', ()=>{
+    card.style.transform = 'translateY(-6px)';
+    card.style.opacity = '0';
+    setTimeout(()=>{ window.location.href = '/accounts/signup/'; }, 220);
+  });
+  // Shake on error messages present
+  const hasError = !!document.querySelector('.error');
+  if (hasError){
+    card.classList.add('ring-1','ring-[var(--c-danger)]');
+    card.animate([
+      { transform: 'translateX(0)' },
+      { transform: 'translateX(-4px)' },
+      { transform: 'translateX(4px)' },
+      { transform: 'translateX(0)' }
+    ], { duration: 250 });
+  }
+})();
+</script>
+{% endblock %}

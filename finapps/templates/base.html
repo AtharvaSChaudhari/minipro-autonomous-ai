@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FinApps</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    window.tailwind = window.tailwind || {};
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#042E6F',
+            primaryLight: '#ADE9FB',
+            bgBase: '#FAFAFA',
+            neutral900: '#393D45',
+            neutral500: '#A7A7A7',
+            success: '#63C577',
+            danger: '#FF494C',
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    :root{
+      --c-primary:#042E6F; --c-primary-light:#ADE9FB; --c-bg:#FAFAFA; --c-n900:#393D45; --c-n500:#A7A7A7; --c-success:#63C577; --c-danger:#FF494C;
+    }
+    .fade-in-up{opacity:0; transform:translateY(6px); transition:opacity .4s ease, transform .4s ease}
+    .fade-in-up.show{opacity:1; transform:translateY(0)}
+    .slide-in{transform:translateX(-100%); transition:transform .3s ease}
+    .slide-in.show{transform:translateX(0)}
+    .reveal{opacity:0; transform:translateY(12px); transition:opacity .5s ease, transform .5s ease}
+    .reveal.show{opacity:1; transform:translateY(0)}
+    @keyframes pulseGlow{0%{box-shadow:0 0 0 0 rgba(4,46,111,.45)}70%{box-shadow:0 0 0 14px rgba(4,46,111,0)}100%{box-shadow:0 0 0 0 rgba(4,46,111,0)}}
+    .pulse-glow{animation:pulseGlow 2.2s ease-out infinite}
+    @keyframes fadeIn{from{opacity:0; transform:translateY(6px)}to{opacity:1; transform:translateY(0)}}
+    .chat-bubble{max-width:80%; border-radius:12px; padding:.5rem .75rem; margin:.25rem 0; animation:fadeIn .25s ease}
+    .chat-user{background:var(--c-primary); color:#fff; margin-left:auto}
+    .chat-bot{background:#F3F4F6; color:var(--c-n900)}
+    .typing{display:flex; gap:4px; align-items:center; color:var(--c-n500); font-size:.875rem}
+    .typing span{width:6px; height:6px; background:var(--c-n500); border-radius:9999px; display:inline-block; animation:blink 1s infinite}
+    .typing span:nth-child(2){animation-delay:.15s}
+    .typing span:nth-child(3){animation-delay:.3s}
+    @keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet">
+</head>
+<body class="min-h-screen bg-[var(--c-bg)] text-[var(--c-n900)]" style="font-family:Satoshi,Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto">
+  <nav class="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-neutral-200">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <button id="menuToggle" class="md:hidden p-2 rounded hover:bg-neutral-100 transition">
+          <svg class="w-6 h-6 text-[var(--c-n900)]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+        <a href="/" class="font-extrabold text-xl text-[var(--c-primary)]">FinApps</a>
+      </div>
+      <div class="hidden md:flex items-center gap-5 text-sm">
+        <a class="flex items-center gap-1 hover:text-[var(--c-primary)] transition" href="/insights/dashboard/">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 13h6V3H3v10zm0 8h6v-6H3v6zm8 0h10V11H11v10zm0-18v6h10V3H11z"/></svg>
+          <span>Dashboard</span>
+        </a>
+        <a class="flex items-center gap-1 hover:text-[var(--c-primary)] transition" href="/bank/connect/">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2 6h20v12H2V6zm2 2v2h16V8H4zm0 6h6v2H4v-2z"/></svg>
+          <span>Bank</span>
+        </a>
+        <a class="flex items-center gap-1 hover:text-[var(--c-primary)] transition" href="/agents/invest/">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 17h2l3-7 4 10 3-6 3 3h3v2h-4l-2-2-3 6-4-10-2 4H3z"/></svg>
+          <span>Invest</span>
+        </a>
+        <a class="flex items-center gap-1 hover:text-[var(--c-primary)] transition" href="/agents/health/">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-6.716-3.84-9.428-8.571C.86 9.17 2.79 6 6 6c2.087 0 3.478 1.087 4.286 2.143C11.522 7.087 12.913 6 15 6c3.21 0 5.14 3.17 3.428 6.429C18.716 17.16 12 21 12 21z"/></svg>
+          <span>Health</span>
+        </a>
+        <a class="flex items-center gap-1 hover:text-[var(--c-primary)] transition" href="/agents/loan/">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 2.18l7 3.11v4.71c0 4.54-3 8.85-7 10.06-4-1.21-7-5.52-7-10.06V6.29l7-3.11zM11 7h2v6h-2V7zm0 8h2v2h-2v-2z"/></svg>
+          <span>Loan</span>
+        </a>
+        <a class="flex items-center gap-1 hover:text-[var(--c-primary)] transition" href="/accounts/profile/">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 12a4 4 0 100-8 4 4 0 000 8zm-7 8a7 7 0 1114 0H5z"/></svg>
+          <span>Profile</span>
+        </a>
+      </div>
+      <div class="hidden md:flex items-center gap-2">
+        <a class="px-3 py-1.5 rounded border border-[var(--c-primary)] text-[var(--c-primary)] hover:bg-[var(--c-primary)] hover:text-white transition" href="/accounts/login/">Login</a>
+        <a class="px-3 py-1.5 rounded bg-[var(--c-primary)] text-white hover:bg-[var(--c-primary)] hover:text-white transition" href="/accounts/signup/">Sign up</a>
+      </div>
+    </div>
+  </nav>
+  <!-- Side Menu -->
+  <div id="menuBackdrop" class="fixed inset-0 bg-black/40 hidden opacity-0 transition-opacity"></div>
+  <aside id="sideMenu" class="fixed inset-y-0 left-0 w-72 bg-white shadow-xl slide-in -translate-x-full will-change-transform z-50">
+    <div class="px-4 py-4 border-b border-neutral-200 flex items-center justify-between">
+      <span class="font-bold text-[var(--c-primary)]">Menu</span>
+      <button id="menuClose" class="p-2 rounded hover:bg-neutral-100 transition" aria-label="Close menu">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <nav class="p-4 space-y-2 text-[var(--c-n900)]">
+      <a class="flex items-center gap-2 px-3 py-2 rounded hover:bg-neutral-100 transition" href="/insights/dashboard/"><svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h6V3H3v10zm0 8h6v-6H3v6zm8 0h10V11H11v10zm0-18v6h10V3H11z"/></svg><span>Dashboard</span></a>
+      <a class="flex items-center gap-2 px-3 py-2 rounded hover:bg-neutral-100 transition" href="/bank/connect/"><svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M2 6h20v12H2V6zm2 2v2h16V8H4zm0 6h6v2H4v-2z"/></svg><span>Bank</span></a>
+      <a class="flex items-center gap-2 px-3 py-2 rounded hover:bg-neutral-100 transition" href="/agents/invest/"><svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17h2l3-7 4 10 3-6 3 3h3v2h-4l-2-2-3 6-4-10-2 4H3z"/></svg><span>Invest</span></a>
+      <a class="flex items-center gap-2 px-3 py-2 rounded hover:bg-neutral-100 transition" href="/agents/health/"><svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-6.716-3.84-9.428-8.571C.86 9.17 2.79 6 6 6c2.087 0 3.478 1.087 4.286 2.143C11.522 7.087 12.913 6 15 6c3.21 0 5.14 3.17 3.428 6.429C18.716 17.16 12 21 12 21z"/></svg><span>Health</span></a>
+      <a class="flex items-center gap-2 px-3 py-2 rounded hover:bg-neutral-100 transition" href="/agents/loan/"><svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 2.18l7 3.11v4.71c0 4.54-3 8.85-7 10.06-4-1.21-7-5.52-7-10.06V6.29l7-3.11zM11 7h2v6h-2V7zm0 8h2v2h-2v-2z"/></svg><span>Loan</span></a>
+      <a class="flex items-center gap-2 px-3 py-2 rounded hover:bg-neutral-100 transition" href="/accounts/profile/"><svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a4 4 0 100-8 4 4 0 000 8zm-7 8a7 7 0 1114 0H5z"/></svg><span>Profile</span></a>
+      <div class="pt-2 mt-2 border-t border-neutral-200 text-sm text-neutral-500">Account</div>
+      <a class="flex items-center gap-2 px-3 py-2 rounded hover:bg-neutral-100 transition" href="/accounts/login/">Login</a>
+      <a class="flex items-center gap-2 px-3 py-2 rounded hover:bg-neutral-100 transition" href="/accounts/signup/">Sign up</a>
+    </nav>
+  </aside>
+  <main id="pageMain" class="fade-in-up max-w-6xl mx-auto px-4 py-8">
+    {% if messages %}
+      <div class="mb-4 space-y-2">
+        {% for message in messages %}
+          <div class="p-3 rounded border {{ message.tags }} {% if message.tags == 'error' %}bg-[var(--c-danger)]/10 border-[var(--c-danger)]{% elif message.tags == 'warning' %}bg-amber-100 border-amber-300{% else %}bg-[var(--c-success)]/10 border-[var(--c-success)]{% endif %}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+  <script>
+    const menuToggle = document.getElementById('menuToggle');
+    const menuClose = document.getElementById('menuClose');
+    const sideMenu = document.getElementById('sideMenu');
+    const menuBackdrop = document.getElementById('menuBackdrop');
+    function openMenu(){ sideMenu.classList.add('show'); sideMenu.classList.remove('-translate-x-full'); menuBackdrop.classList.remove('hidden'); requestAnimationFrame(()=> menuBackdrop.classList.add('opacity-100')); }
+    function closeMenu(){ sideMenu.classList.remove('show'); sideMenu.classList.add('-translate-x-full'); menuBackdrop.classList.remove('opacity-100'); setTimeout(()=> menuBackdrop.classList.add('hidden'), 200); }
+    menuToggle && menuToggle.addEventListener('click', openMenu);
+    menuClose && menuClose.addEventListener('click', closeMenu);
+    menuBackdrop && menuBackdrop.addEventListener('click', closeMenu);
+    window.addEventListener('DOMContentLoaded', ()=>{ document.getElementById('pageMain')?.classList.add('show'); });
+    // Section-level slide-up on scroll
+    const observer = new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{ if (e.isIntersecting){ e.target.classList.add('show'); observer.unobserve(e.target);} });
+    }, {threshold: 0.12});
+    document.querySelectorAll('[data-animate="slide-up"]').forEach(el=>{ el.classList.add('reveal'); observer.observe(el); });
+    // No global chatbot — page-scoped UIs handle chat
+  </script>
+</body>
+</html>

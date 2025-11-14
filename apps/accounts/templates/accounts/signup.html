@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load form_tags %}
+{% block content %}
+<section class="min-h-[70vh] grid place-items-center rounded-xl p-6 bg-gradient-to-br from-[#002970] to-[#0050d4]">
+  <div id="signupCard" class="w-full max-w-2xl bg-white rounded-2xl shadow-xl p-6 md:p-8 transition-all duration-300">
+    <div class="flex items-center gap-2 mb-4">
+      <svg class="w-6 h-6 text-[var(--c-primary)]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 12c2.21 0 4-1.79 4-4S14.21 4 12 4 8 5.79 8 8s1.79 4 4 4zm-6 8v-1a6 6 0 1112 0v1H6z"/></svg>
+      <h1 class="text-2xl font-extrabold text-[var(--c-n900)]">Create your account</h1>
+    </div>
+    <p class="text-sm text-[var(--c-n500)] mb-6">Join FinApps to plan, invest, and stay protected.</p>
+
+    <form method="post" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      {% for field in form %}
+        <div>
+          <label class="block text-xs text-[var(--c-n500)] mb-1">{{ field.label }}</label>
+          {{ field|add_class:"w-full px-3 py-2 rounded-lg border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-[var(--c-primary)] focus:border-[var(--c-primary)] transition" }}
+          <div class="text-[var(--c-danger)] text-xs mt-1">{{ field.errors }}</div>
+        </div>
+      {% endfor %}
+      <div class="md:col-span-2">
+        <button class="w-full px-4 py-2.5 rounded-lg bg-[var(--c-primary)] text-white hover:bg-[var(--c-primary-light)] hover:text-[var(--c-n900)] transition-colors" type="submit">Sign up</button>
+      </div>
+    </form>
+
+    <div class="mt-4 text-sm text-center text-[var(--c-n500)]">
+      Already have an account?
+      <button id="toLogin" class="underline decoration-[var(--c-primary)] underline-offset-4 hover:text-[var(--c-primary)] transition">Login</button>
+    </div>
+  </div>
+</section>
+
+<script>
+(function(){
+  const card = document.getElementById('signupCard');
+  const toLogin = document.getElementById('toLogin');
+  toLogin?.addEventListener('click', ()=>{
+    card.style.transform = 'translateY(6px)';
+    card.style.opacity = '0';
+    setTimeout(()=>{ window.location.href = '/accounts/login/'; }, 220);
+  });
+  const hasFieldErrors = !!document.querySelector('.text-[var(--c-danger)]') || !!document.querySelector('.errorlist');
+  if (hasFieldErrors){
+    card.classList.add('ring-1','ring-[var(--c-danger)]');
+    card.animate([
+      { transform: 'translateX(0)' },
+      { transform: 'translateX(-4px)' },
+      { transform: 'translateX(4px)' },
+      { transform: 'translateX(0)' }
+    ], { duration: 250 });
+  }
+})();
+</script>
+{% endblock %}

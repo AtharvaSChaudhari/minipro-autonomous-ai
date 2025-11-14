@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block content %}
+  <section class="relative overflow-hidden rounded-2xl border border-neutral-200 bg-white" data-animate="slide-up">
+    <div class="absolute -top-24 -right-24 w-80 h-80 bg-[var(--c-primary-light)] opacity-40 blur-3xl rounded-full"></div>
+    <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-[var(--c-primary-light)] opacity-30 blur-3xl rounded-full"></div>
+    <div class="relative max-w-6xl mx-auto px-6 py-16 md:py-20 text-center">
+      <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-neutral-200 text-xs text-[var(--c-n500)] bg-white/70">
+        Trusted guidance for Indian finance
+      </div>
+      <h1 class="mt-4 text-4xl md:text-5xl font-black tracking-tight text-[var(--c-n900)]">
+        Smarter Money Decisions with AI
+      </h1>
+      <p class="mt-3 text-[var(--c-n500)] max-w-2xl mx-auto">
+        Connect your bank, get a clear risk score and eligibility, and chat with AI to plan health cover and investments confidently.
+      </p>
+      <div class="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+        <a href="/accounts/signup/" class="w-full sm:w-auto px-6 py-3 rounded-lg bg-[var(--c-primary)] text-white hover:bg-[var(--c-primary-light)] hover:text-[var(--c-n900)] transition-colors">Get Started</a>
+        <a href="/accounts/login/" class="w-full sm:w-auto px-6 py-3 rounded-lg border border-[var(--c-primary)] text-[var(--c-primary)] hover:bg-[var(--c-primary)] hover:text-white transition-colors">Login</a>
+      </div>
+      <div class="mt-8 text-xs text-[var(--c-n500)]">Bank-grade security · You control your data</div>
+    </div>
+  </section>
+
+  <section class="mt-10 grid grid-cols-1 md:grid-cols-3 gap-4" data-animate="slide-up">
+    <div class="bg-white rounded-xl p-5 border border-neutral-200 shadow-sm">
+      <div class="w-10 h-10 rounded-lg bg-[var(--c-primary-light)] text-[var(--c-primary)] grid place-items-center mb-3">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h6V3H3v10zm0 8h6v-6H3v6zm8 0h10V11H11v10zm0-18v6h10V3H11z"/></svg>
+      </div>
+      <div class="font-semibold text-[var(--c-n900)]">Actionable dashboard</div>
+      <div class="text-sm text-[var(--c-n500)] mt-1">Simple cards and charts to monitor spend, save, and eligibility.</div>
+    </div>
+    <div class="bg-white rounded-xl p-5 border border-neutral-200 shadow-sm">
+      <div class="w-10 h-10 rounded-lg bg-[var(--c-primary-light)] text-[var(--c-primary)] grid place-items-center mb-3">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 00-7 7 7 7 0 006 6.92V18H8a2 2 0 100 4h8a2 2 0 100-4h-3v-2.08A7 7 0 0019 9a7 7 0 00-7-7z"/></svg>
+      </div>
+      <div class="font-semibold text-[var(--c-n900)]">AI health & invest chat</div>
+      <div class="text-sm text-[var(--c-n500)] mt-1">Dedicated assistants with quick suggestions and clear answers.</div>
+    </div>
+    <div class="bg-white rounded-xl p-5 border border-neutral-200 shadow-sm">
+      <div class="w-10 h-10 rounded-lg bg-[var(--c-primary-light)] text-[var(--c-primary)] grid place-items-center mb-3">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+      </div>
+      <div class="font-semibold text-[var(--c-n900)]">Built for trust</div>
+      <div class="text-sm text-[var(--c-n500)] mt-1">Transparent recommendations, your data stays private.</div>
+    </div>
+  </section>
+
+  <section class="mt-10" data-animate="slide-up">
+    <div class="text-center font-bold text-2xl text-[var(--c-n900)]">Trusted by Partners</div>
+    <style>
+      @keyframes scrollLeft { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+      .marquee { position: relative; overflow: hidden; }
+      .marquee-track { display: flex; align-items: center; gap: 2.5rem; min-width: max-content; animation: scrollLeft 40s linear infinite; will-change: transform; }
+      .marquee:hover .marquee-track { animation-play-state: paused; }
+    </style>
+    <div class="mt-6 marquee">
+      <div class="marquee-track">
+        <img src="https://logo.clearbit.com/hdfcfund.com" alt="HDFC Mutual Fund" class="h-12 md:h-16 w-auto" onerror="this.style.display='none'" />
+        <img src="https://logo.clearbit.com/sbimf.com" alt="SBI Mutual Fund" class="h-12 md:h-16 w-auto" onerror="this.style.display='none'" />
+        <img src="https://logo.clearbit.com/axismf.com" alt="Axis Mutual Fund" class="h-12 md:h-16 w-auto" onerror="this.style.display='none'" />
+        <img src="https://logo.clearbit.com/iciciprumf.com" alt="ICICI Prudential Mutual Fund" class="h-12 md:h-16 w-auto" onerror="this.style.display='none'" />
+        <img src="https://logo.clearbit.com/nipponindiamf.com" alt="Nippon India Mutual Fund" class="h-12 md:h-16 w-auto" onerror="this.style.display='none'" />
+        <img src="https://logo.clearbit.com/licindia.in" alt="LIC" class="h-12 md:h-16 w-auto" onerror="this.style.display='none'" />
+        <img src="https://logo.clearbit.com/hdfcergo.com" alt="HDFC ERGO" class="h-12 md:h-16 w-auto" onerror="this.style.display='none'" />
+        <img src="https://logo.clearbit.com/starhealth.in" alt="Star Health" class="h-12 md:h-16 w-auto" onerror="this.style.display='none'" />
+        <img src="https://logo.clearbit.com/careinsurance.com" alt="Care Health Insurance" class="h-12 md:h-16 w-auto" onerror="this.style.display='none'" />
+        <img src="https://logo.clearbit.com/bajajallianz.com" alt="Bajaj Allianz" class="h-12 md:h-16 w-auto" onerror="this.style.display='none'" />
+        <img src="https://logo.clearbit.com/acko.com" alt="ACKO" class="h-12 md:h-16 w-auto" onerror="this.style.display='none'" />
+        <img src="https://logo.clearbit.com/hdfcfund.com" alt="HDFC Mutual Fund" class="h-12 md:h-16 w-auto" onerror="this.style.display='none'" />
+        <img src="https://logo.clearbit.com/sbimf.com" alt="SBI Mutual Fund" class="h-12 md:h-16 w-auto" onerror="this.style.display='none'" />
+        <img src="https://logo.clearbit.com/axismf.com" alt="Axis Mutual Fund" class="h-12 md:h-16 w-auto" onerror="this.style.display='none'" />
+        <img src="https://logo.clearbit.com/iciciprumf.com" alt="ICICI Prudential Mutual Fund" class="h-12 md:h-16 w-auto" onerror="this.style.display='none'" />
+        <img src="https://logo.clearbit.com/nipponindiamf.com" alt="Nippon India Mutual Fund" class="h-12 md:h-16 w-auto" onerror="this.style.display='none'" />
+        <img src="https://logo.clearbit.com/licindia.in" alt="LIC" class="h-12 md:h-16 w-auto" onerror="this.style.display='none'" />
+        <img src="https://logo.clearbit.com/hdfcergo.com" alt="HDFC ERGO" class="h-12 md:h-16 w-auto" onerror="this.style.display='none'" />
+        <img src="https://logo.clearbit.com/starhealth.in" alt="Star Health" class="h-12 md:h-16 w-auto" onerror="this.style.display='none'" />
+        <img src="https://logo.clearbit.com/careinsurance.com" alt="Care Health Insurance" class="h-12 md:h-16 w-auto" onerror="this.style.display='none'" />
+        <img src="https://logo.clearbit.com/bajajallianz.com" alt="Bajaj Allianz" class="h-12 md:h-16 w-auto" onerror="this.style.display='none'" />
+        <img src="https://logo.clearbit.com/acko.com" alt="ACKO" class="h-12 md:h-16 w-auto" onerror="this.style.display='none'" />
+      </div>
+    </div>
+  </section>
+{% endblock %}

@@ -1,0 +1,479 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="text-2xl font-bold mb-6 text-[var(--c-n900)]">Investment Planner & Agent</h2>
+
+<div class="grid grid-cols-1 gap-6">
+  <!-- Main: SIP, Plan card, Products -->
+  <div class="space-y-6">
+    <div data-animate="slide-up" class="bg-white rounded-xl p-6 border border-neutral-200 shadow-sm">
+      <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+        <div>
+          <h3 class="font-semibold text-[var(--c-n900)]">SIP Calculator</h3>
+          <p class="text-sm text-[var(--c-n500)]">Plan your investments with simple inputs. Enter monthly SIP, expected return, and years.</p>
+        </div>
+        <form id="sipForm" method="post" class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+          {% csrf_token %}
+          <div>
+            <label class="block text-xs text-[var(--c-n500)] mb-1">Monthly SIP (₹ / month)</label>
+            <input name="sip" type="number" step="100" value="{{ sip_monthly }}" class="w-full px-3 py-2 rounded-lg bg-white border border-neutral-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--c-primary)] focus:border-[var(--c-primary)]" placeholder="e.g., 2500" />
+          </div>
+          <div>
+            <label class="block text-xs text-[var(--c-n500)] mb-1">Annual Return (decimal)</label>
+            <input name="rate" type="number" step="0.01" value="{{ sip_rate }}" class="w-full px-3 py-2 rounded-lg bg-white border border-neutral-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--c-primary)] focus:border-[var(--c-primary)]" placeholder="e.g., 0.12" />
+          </div>
+          <div class="flex gap-2">
+            <div class="flex-1">
+              <label class="block text-xs text-[var(--c-n500)] mb-1">Years</label>
+              <input name="years" type="number" step="1" value="{{ sip_years }}" class="w-full px-3 py-2 rounded-lg bg-white border border-neutral-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--c-primary)] focus:border-[var(--c-primary)]" placeholder="e.g., 10" />
+            </div>
+            <button class="px-4 py-2 rounded-lg bg-[var(--c-primary)] text-white hover:bg-[var(--c-primary-light)] hover:text-[var(--c-n900)] transition-colors text-sm">Calculate</button>
+          </div>
+        </form>
+      </div>
+      <div class="mt-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <div class="text-sm text-[var(--c-n500)]">Quick presets</div>
+        <div class="flex flex-wrap gap-2">
+          <button type="button" class="px-3 py-1.5 bg-neutral-100 border border-neutral-200 rounded text-xs sip-preset" data-amt="1000" data-years="3">₹1,000 / 3y</button>
+          <button type="button" class="px-3 py-1.5 bg-neutral-100 border border-neutral-200 rounded text-xs sip-preset" data-amt="2500" data-years="5">₹2,500 / 5y</button>
+          <button type="button" class="px-3 py-1.5 bg-neutral-100 border border-neutral-200 rounded text-xs sip-preset" data-amt="5000" data-years="10">₹5,000 / 10y</button>
+        </div>
+        <div class="text-sm text-[var(--c-n900)]">Projected corpus after {{ sip_years }} years: <span class="font-semibold">₹ {{ projected_corpus|floatformat:0 }}</span></div>
+      </div>
+      <div class="mt-4 bg-neutral-50 border border-neutral-200 rounded p-3">
+        <div class="text-sm font-semibold mb-2 text-[var(--c-n900)]">Beginner guide</div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+          <div>
+            <div class="text-xs text-[var(--c-n500)] mb-1">Risk preset</div>
+            <div class="flex gap-2">
+              <button type="button" class="px-2 py-1 text-xs bg-emerald-600/30 border border-emerald-600/40 rounded risk" data-rate="0.06">Conservative</button>
+              <button type="button" class="px-2 py-1 text-xs bg-amber-600/30 border border-amber-600/40 rounded risk" data-rate="0.10">Balanced</button>
+              <button type="button" class="px-2 py-1 text-xs bg-rose-600/30 border border-rose-600/40 rounded risk" data-rate="0.12">Aggressive</button>
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs text-[var(--c-n500)] mb-1">Target amount (₹)</label>
+            <input type="number" id="targetAmt" class="w-full px-3 py-2 rounded-lg bg-white border border-neutral-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--c-primary)] focus:border-[var(--c-primary)]" placeholder="e.g., 200000" />
+          </div>
+          <div class="flex gap-2">
+            <button type="button" id="suggestSip" class="px-4 py-2 rounded-lg bg-[var(--c-primary)] text-white hover:bg-[var(--c-primary-light)] hover:text-[var(--c-n900)] transition-colors text-sm">Suggest SIP</button>
+            <div class="text-sm text-[var(--c-n500)] self-center" id="suggestOut"></div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-3">
+        <canvas id="sipChart" height="70"></canvas>
+      </div>
+    </div>
+
+    {% if parsed_plan %}
+    <div data-animate="slide-up" class="bg-white rounded-xl p-6 border border-neutral-200 shadow-sm">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          {% if plan_logo %}
+          <img src="{{ plan_logo }}" alt="logo" class="w-8 h-8 rounded bg-white p-1" />
+          {% endif %}
+          <div class="font-semibold">Recommended Plan</div>
+        </div>
+        <div class="text-sm text-[var(--c-n500)]">{{ parsed_plan.investment_type|default:"Investment" }}</div>
+      </div>
+      <div class="mt-3 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <div class="text-[var(--c-n500)] text-sm">Company</div>
+          <div class="font-semibold">{{ parsed_plan.company }}</div>
+          <div class="text-[var(--c-n500)] text-sm mt-2">Product</div>
+          <div>{{ parsed_plan.product }}</div>
+        </div>
+        <div>
+          <div class="text-[var(--c-n500)] text-sm">Amount & Frequency</div>
+          <div class="font-semibold">₹ {{ parsed_plan.amount_inr|default:"--" }} / {{ parsed_plan.frequency|default:"month" }}</div>
+          <div class="text-[var(--c-n500)] text-sm mt-2">Expected Return</div>
+          <div>{{ parsed_plan.expected_return_pct|default:"--" }}% | Lock-in: {{ parsed_plan.lock_in_years|default:0 }}y</div>
+        </div>
+        <div>
+          <div class="text-[var(--c-n500)] text-sm">Risk</div>
+          <div class="mt-1 h-2 bg-white/10 rounded">
+            <div class="h-2 bg-gradient-to-r from-emerald-500 via-amber-500 to-rose-500 rounded" data-width="{{ parsed_plan.risk_score|default:50 }}"></div>
+          </div>
+          <div class="text-[var(--c-n500)] text-sm mt-2">Why this</div>
+          <div class="text-sm">{{ parsed_plan.why_this|default:"" }}</div>
+        </div>
+      </div>
+      <div class="mt-4 flex gap-3">
+        <button class="px-4 py-2 rounded-lg bg-[var(--c-success)] text-white hover:opacity-90 transition">Approve Once</button>
+        <button class="px-4 py-2 rounded-lg bg-[var(--c-primary)] text-white hover:bg-[var(--c-primary-light)] hover:text-[var(--c-n900)] transition">Auto-Approve</button>
+        <button class="px-4 py-2 rounded-lg bg-[var(--c-danger)] text-white hover:opacity-90 transition">Decline</button>
+        {% if plan_apply %}
+        <a href="{{ plan_apply }}" target="_blank" rel="noopener" class="px-4 py-2 bg-white/10 border border-white/10 rounded">Invest</a>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+    <div data-animate="slide-up" class="bg-white rounded-xl p-6 border border-neutral-200 shadow-sm">
+      <div class="flex items-center justify-between">
+        <h3 class="font-semibold text-[var(--c-n900)]">Ask Investment Assistant</h3>
+      </div>
+      <form id="investChatForm" method="post" class="space-y-3">
+        {% csrf_token %}
+        <textarea id="investPrompt" name="prompt" rows="4" class="w-full px-3 py-2 rounded-lg bg-white border border-neutral-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--c-primary)] focus:border-[var(--c-primary)]" placeholder="e.g., Build a SIP plan for ₹5,000/month for 10 years at 12% expected return"></textarea>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <button type="button" class="px-3 py-2 bg-neutral-100 border border-neutral-200 rounded text-sm quick-invest" data-q="Compare ELSS vs Index Fund for tax planning and returns">ELSS vs Index</button>
+          <button type="button" class="px-3 py-2 bg-neutral-100 border border-neutral-200 rounded text-sm quick-invest" data-q="Pros and cons of Gold ETF vs Silver ETF for diversification">Gold vs Silver</button>
+          <button type="button" class="px-3 py-2 bg-neutral-100 border border-neutral-200 rounded text-sm quick-invest" data-q="Suggest a low-risk portfolio for 3 years using Liquid/Debt funds">Low-risk 3y</button>
+          <button type="button" class="px-3 py-2 bg-neutral-100 border border-neutral-200 rounded text-sm quick-invest" data-q="Create a SIP ladder: 2k, 3k, 5k across Index/ELSS/Liquid">SIP ladder</button>
+        </div>
+        <button class="px-4 py-2 rounded-lg bg-[var(--c-primary)] text-white hover:bg-[var(--c-primary-light)] hover:text-[var(--c-n900)] transition-colors">Ask</button>
+      </form>
+      {% if reply %}
+      <div class="mt-3 bg-neutral-50 border border-neutral-200 p-3 rounded whitespace-pre-wrap">{{ reply }}</div>
+      {% endif %}
+    </div>
+
+    <!-- Multi-Agent Lab (LangGraph) -->
+    <div data-animate="slide-up" class="bg-white rounded-xl p-6 border border-neutral-200 shadow-sm">
+      <div class="flex items-center justify-between">
+        <h3 class="font-semibold text-[var(--c-n900)]">Multi-Agent Lab</h3>
+        <div class="text-xs text-[var(--c-n500)]">Education · Data Analyzer · Advisor · Goal Tracker</div>
+      </div>
+      <div class="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <!-- Education Agent (autonomous) -->
+        <div class="rounded-xl border border-neutral-200 p-4">
+          <div class="font-semibold text-[var(--c-n900)] mb-2">Education Agent</div>
+          {% if education_cards %}
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {% for c in education_cards %}
+            <div class="rounded bg-white border border-neutral-200 p-3">
+              <div class="font-semibold text-[var(--c-n900)]">{{ c.title }}</div>
+              {% if c.subtitle %}<div class="text-sm text-[var(--c-n500)]">{{ c.subtitle }}</div>{% endif %}
+              {% if c.highlights %}
+              <ul class="mt-1 space-y-1 text-sm">
+                {% for h in c.highlights %}<li class="flex gap-2"><span>•</span><span>{{ h }}</span></li>{% endfor %}
+              </ul>
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+          {% elif education_text %}
+          <div class="bg-neutral-50 border border-neutral-200 p-3 rounded whitespace-pre-wrap">{{ education_text }}</div>
+          {% else %}
+          <div class="text-sm text-[var(--c-n500)]">No education content available.</div>
+          {% endif %}
+        </div>
+
+        <!-- Data Analyzer Agent (autonomous) -->
+        <div class="rounded-xl border border-neutral-200 p-4">
+          <div class="font-semibold text-[var(--c-n900)] mb-2">Data Analyzer Agent</div>
+          {% if analyzer_text %}
+          <div class="bg-neutral-50 border border-neutral-200 p-3 rounded whitespace-pre-wrap">{{ analyzer_text }}</div>
+          {% endif %}
+          {% if analyzer_metrics %}
+          <div class="mt-3 grid grid-cols-2 gap-3">
+            <div class="px-3 py-2 rounded bg-neutral-100 border border-neutral-200">
+              <div class="text-xs text-[var(--c-n500)]">Saved this month</div>
+              <div class="font-semibold">₹ {{ analyzer_metrics.saved_inr|default:0 }}</div>
+            </div>
+            <div class="px-3 py-2 rounded bg-neutral-100 border border-neutral-200">
+              <div class="text-xs text-[var(--c-n500)]">Expense ratio Δ</div>
+              <div class="font-semibold">{{ analyzer_metrics.expense_ratio_change_pct|default:0 }}%</div>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Investment Advisor Agent (autonomous) -->
+        <div class="rounded-xl border border-neutral-200 p-4">
+          <div class="font-semibold text-[var(--c-n900)] mb-2">Investment Advisor Agent</div>
+          {% if advisor_plan %}
+          <div class="rounded-xl bg-white border border-neutral-200 p-4">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                {% if advisor_logo %}<img src="{{ advisor_logo }}" alt="logo" class="w-8 h-8 rounded bg-white p-1" onerror="this.style.display='none'" />{% endif %}
+                <div class="font-semibold">{{ advisor_plan.company }}</div>
+              </div>
+              <div class="text-sm text-[var(--c-n500)]">{{ advisor_plan.investment_type|default:"Investment" }}</div>
+            </div>
+            <div class="mt-3 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <div class="text-[var(--c-n500)] text-sm">Product</div>
+                <div class="font-semibold">{{ advisor_plan.product }}</div>
+              </div>
+              <div>
+                <div class="text-[var(--c-n500)] text-sm">Amount & Frequency</div>
+                <div class="font-semibold">₹ {{ advisor_plan.amount_inr|default:"--" }} / {{ advisor_plan.frequency|default:"month" }}</div>
+                <div class="text-[var(--c-n500)] text-sm mt-2">Expected • Lock-in</div>
+                <div>{{ advisor_plan.expected_return_pct|default:"--" }}% • {{ advisor_plan.lock_in_years|default:0 }}y</div>
+              </div>
+              <div>
+                <div class="text-[var(--c-n500)] text-sm">Risk</div>
+                <div class="mt-1 h-2 bg-white/10 rounded"><div class="h-2 bg-gradient-to-r from-emerald-500 via-amber-500 to-rose-500 rounded" data-width="{{ advisor_plan.risk_score|default:50 }}"></div></div>
+                {% if advisor_plan.why_this %}
+                <div class="text-[var(--c-n500)] text-sm mt-2">Why this</div>
+                <div class="text-sm">{{ advisor_plan.why_this }}</div>
+                {% endif %}
+              </div>
+            </div>
+            {% if advisor_apply %}
+            <a href="{{ advisor_apply }}" target="_blank" rel="noopener" class="mt-3 inline-block px-3 py-1.5 rounded bg-[var(--c-primary)] text-white hover:bg-[var(--c-primary-light)] hover:text-[var(--c-n900)] transition-colors text-sm">Invest</a>
+            {% endif %}
+          </div>
+          {% elif advisor_text %}
+          <div class="bg-neutral-50 border border-neutral-200 p-3 rounded whitespace-pre-wrap">{{ advisor_text }}</div>
+          {% else %}
+          <div class="text-sm text-[var(--c-n500)]">No advisor recommendation available.</div>
+          {% endif %}
+        </div>
+
+        <!-- Goal Tracker Agent (autonomous) -->
+        <div class="rounded-xl border border-neutral-200 p-4">
+          <div class="font-semibold text-[var(--c-n900)] mb-2">Goal Tracker Agent</div>
+          {% if goal_data %}
+          <div class="bg-neutral-50 border border-neutral-200 p-3 rounded">
+            <div class="font-semibold text-[var(--c-n900)]">{{ goal_data.goal|default:"Goal" }}</div>
+            <div class="text-sm text-[var(--c-n500)]">Target: ₹ {{ goal_data.target_inr|default:0 }} · Current: ₹ {{ goal_data.current_inr|default:0 }}</div>
+            <div class="mt-2 h-2 bg-white rounded"><div class="h-2 bg-[var(--c-primary)] rounded" data-width="{{ goal_data.progress_pct|default:0 }}"></div></div>
+            {% if goal_data.tips %}
+            <ul class="mt-2 text-sm space-y-1">{% for t in goal_data.tips %}<li class="flex gap-2"><span>•</span><span>{{ t }}</span></li>{% endfor %}</ul>
+            {% endif %}
+          </div>
+          {% else %}
+          <div class="text-sm text-[var(--c-n500)]">No goal tracking data yet.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div data-animate="slide-up" class="bg-white rounded-xl p-6 border border-neutral-200 shadow-sm">
+      <div class="flex items-center justify-between">
+        <h3 class="font-semibold text-[var(--c-n900)]">Popular Investment Products</h3>
+        <div class="text-xs text-[var(--c-n500)]">Mutual funds, Debt, Liquid, Index, Gold ETF, ELSS</div>
+      </div>
+      <div class="mt-3 flex flex-wrap gap-2">
+        <button type="button" class="px-3 py-1.5 bg-neutral-100 border border-neutral-200 rounded text-xs filter-btn" data-filter="top">Top Picks</button>
+        <button type="button" class="px-3 py-1.5 bg-neutral-100 border border-neutral-200 rounded text-xs filter-btn" data-filter="Index Fund">Index</button>
+        <button type="button" class="px-3 py-1.5 bg-neutral-100 border border-neutral-200 rounded text-xs filter-btn" data-filter="ELSS">ELSS</button>
+        <button type="button" class="px-3 py-1.5 bg-neutral-100 border border-neutral-200 rounded text-xs filter-btn" data-filter="Liquid Fund">Liquid</button>
+        <button type="button" class="px-3 py-1.5 bg-neutral-100 border border-neutral-200 rounded text-xs filter-btn" data-filter="Debt Fund">Debt</button>
+        <button type="button" class="px-3 py-1.5 bg-neutral-100 border border-neutral-200 rounded text-xs filter-btn" data-filter="Gold ETF">Gold</button>
+        <button type="button" class="px-3 py-1.5 bg-neutral-100 border border-neutral-200 rounded text-xs filter-btn" data-filter="Silver ETF">Silver</button>
+        <button type="button" class="px-3 py-1.5 bg-neutral-100 border border-neutral-200 rounded text-xs filter-btn" data-filter="PPF">PPF</button>
+        <button type="button" class="px-3 py-1.5 bg-neutral-100 border border-neutral-200 rounded text-xs filter-btn" data-filter="NPS">NPS</button>
+        <button type="button" class="px-3 py-1.5 bg-neutral-100 border border-neutral-200 rounded text-xs filter-btn" data-filter="Fixed Deposit">FD</button>
+        <button type="button" class="px-3 py-1.5 bg-neutral-100 border border-neutral-200 rounded text-xs filter-btn" data-filter="all">All</button>
+      </div>
+      <div id="productsGrid" class="mt-3 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+        {% for p in products %}
+        <div class="rounded-xl bg-white border border-neutral-200 p-4 hover:shadow-md hover:-translate-y-0.5 transition{% if not p.top %} hidden{% endif %}" data-cat="{{ p.category }}" data-top="{% if p.top %}1{% else %}0{% endif %}">
+          <div class="flex items-center gap-3">
+            {% if p.logo %}<img src="{{ p.logo }}" alt="logo" class="w-7 h-7 rounded bg-white p-1" onerror="this.style.display='none'" />{% endif %}
+            <div>
+              <div class="font-semibold">{{ p.company }}</div>
+              <div class="text-[var(--c-n500)] text-sm">{{ p.product }}</div>
+            </div>
+          </div>
+          <div class="text-sm text-[var(--c-n500)] mt-1">Type: {{ p.category }}</div>
+          <div class="text-sm text-[var(--c-n500)]">Min SIP: ₹ {{ p.min_sip }}</div>
+          <div class="text-sm text-[var(--c-n500)]">Expected: {{ p.expected_return_pct }}%</div>
+          <div class="mt-2 flex flex-wrap gap-2">
+            {% for d in p.durations %}
+            <span class="px-2 py-0.5 text-xs rounded bg-neutral-100 border border-neutral-200">{{ d }}y</span>
+            {% endfor %}
+          </div>
+          <a href="{{ p.apply_link }}" target="_blank" rel="noopener" class="mt-3 inline-block px-3 py-1.5 rounded bg-[var(--c-primary)] text-white hover:bg-[var(--c-primary-light)] hover:text-[var(--c-n900)] transition-colors text-sm">Invest</a>
+        </div>
+        {% empty %}
+        <div class="text-[var(--c-n500)]">No products found.</div>
+        {% endfor %}
+      </div>
+    </div>
+    <div data-animate="slide-up" class="bg-white rounded-xl p-6 border border-neutral-200 shadow-sm">
+      <div class="flex items-center justify-between">
+        <h3 class="font-semibold text-[var(--c-n900)]">Gold & Silver Investment</h3>
+        <div class="text-xs text-[var(--c-n500)]">Gold ETF · Silver ETF · Hedge against inflation</div>
+      </div>
+      <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+        {% for p in products %}
+          {% if p.category == 'Gold ETF' or p.category == 'Silver ETF' %}
+          <div class="rounded-xl bg-white border border-neutral-200 p-4 hover:shadow-md hover:-translate-y-0.5 transition">
+            <div class="flex items-center gap-3">
+              {% if p.logo %}<img src="{{ p.logo }}" alt="logo" class="w-8 h-8 rounded bg-white p-1" onerror="this.style.display='none'" />{% endif %}
+              <div>
+                <div class="font-semibold">{{ p.company }}</div>
+                <div class="text-[var(--c-n500)] text-sm">{{ p.product }}</div>
+              </div>
+            </div>
+            <div class="text-sm text-[var(--c-n500)] mt-2">Type: {{ p.category }}</div>
+            <div class="text-sm text-[var(--c-n500)]">Min SIP: ₹ {{ p.min_sip }}</div>
+            <div class="text-sm text-[var(--c-n500)]">Expected: {{ p.expected_return_pct }}%</div>
+            <div class="mt-3 flex gap-2">
+              <a href="{{ p.apply_link }}" target="_blank" rel="noopener" class="px-3 py-1.5 rounded bg-[var(--c-primary)] text-white hover:bg-[var(--c-primary-light)] hover:text-[var(--c-n900)] transition-colors text-sm">Invest Gold/Silver</a>
+              <button type="button" class="px-3 py-1.5 bg-neutral-100 border border-neutral-200 rounded text-sm ask-ai" data-q="Explain pros/cons of {{ p.product }}">Ask AI</button>
+            </div>
+          </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Global chatbot available site-wide -->
+
+<script>
+(function(){
+  const yearsData = JSON.parse('{{ years_x|default:"[]"|escapejs }}');
+  const sipValues = JSON.parse('{{ values|default:"[]"|escapejs }}');
+  new Chart(document.getElementById('sipChart'), {
+    type: 'line',
+    data: {
+      labels: yearsData,
+      datasets: [{
+        label: 'SIP FV (₹)',
+        data: sipValues,
+        borderColor: '#042E6F',
+        backgroundColor: 'rgba(4,46,111,0.12)',
+        fill: true, tension: .25
+      }]
+    },
+    options: {
+      plugins:{legend:{labels:{color:'#393D45'}}},
+      scales:{
+        x:{ticks:{color:'#393D45'}, grid:{color:'rgba(0,0,0,0.06)'}},
+        y:{ticks:{color:'#393D45'}, grid:{color:'rgba(0,0,0,0.06)'}}
+      }
+    }
+  });
+  // Education quick fills
+  document.querySelectorAll('.edu-quick').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const f = b.closest('form'); if (!f) return;
+      const ta = f.querySelector('textarea[name="prompt"]'); if (!ta) return;
+      ta.value = b.getAttribute('data-q')||''; f.submit();
+    });
+  });
+  // SIP presets
+  document.querySelectorAll('.sip-preset').forEach(b=>{
+    b.addEventListener('click',()=>{
+      const f = document.getElementById('sipForm');
+      const amt = b.getAttribute('data-amt');
+      const yrs = b.getAttribute('data-years');
+      const sipIn = f.querySelector('input[name="sip"]');
+      const yearsIn = f.querySelector('input[name="years"]');
+      sipIn.value = amt; yearsIn.value = yrs; f.submit();
+    });
+  });
+  const investChatForm = document.getElementById('investChatForm');
+  const investPrompt = document.getElementById('investPrompt');
+  // Ask-AI on cards -> prefill local chat and submit
+  document.querySelectorAll('.ask-ai').forEach(b=>{
+    b.addEventListener('click',()=>{
+      if (!investChatForm || !investPrompt) return;
+      investPrompt.value = b.getAttribute('data-q') || '';
+      investChatForm.submit();
+    });
+  });
+  // Quick suggestions for investment chat
+  document.querySelectorAll('.quick-invest').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      if (!investChatForm || !investPrompt) return;
+      investPrompt.value = btn.getAttribute('data-q') || '';
+      investChatForm.submit();
+    });
+  });
+
+  // Category filters
+  const applyFilter = (f) => {
+    const cards = document.querySelectorAll('#productsGrid [data-cat]');
+    cards.forEach(c => {
+      const cat = c.getAttribute('data-cat');
+      const top = c.getAttribute('data-top') === '1';
+      let show = false;
+      if (f === 'all') show = true;
+      else if (f === 'top') show = top;
+      else show = (cat === f);
+      c.classList.toggle('hidden', !show);
+    });
+  };
+  document.querySelectorAll('.filter-btn').forEach(b=>{
+    b.addEventListener('click',()=>{
+      document.querySelectorAll('.filter-btn').forEach(x=>x.classList.remove('ring-2','ring-primary'));
+      b.classList.add('ring-2','ring-primary');
+      applyFilter(b.getAttribute('data-filter'));
+    });
+  });
+  // default to Top Picks
+  applyFilter('top');
+
+  // Risk presets -> set rate and highlight
+  const sipForm = document.getElementById('sipForm');
+  const rateInput = sipForm.querySelector('input[name="rate"]');
+  document.querySelectorAll('.risk').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.risk').forEach(x=>x.classList.remove('ring-2','ring-white/60'));
+      btn.classList.add('ring-2','ring-white/60');
+      const r = parseFloat(btn.getAttribute('data-rate') || '0.1');
+      rateInput.value = r.toFixed(2);
+    });
+  });
+
+  // Suggest SIP from target amount
+  const targetAmt = document.getElementById('targetAmt');
+  const suggestBtn = document.getElementById('suggestSip');
+  const suggestOut = document.getElementById('suggestOut');
+  const yearsInput = sipForm.querySelector('input[name="years"]');
+  const sipInput = sipForm.querySelector('input[name="sip"]');
+  function suggestSipMonthly(target, annualRate, years){
+    const r = annualRate/12;
+    const n = years*12;
+    if (r <= 0){ return target / n; }
+    const denom = ((Math.pow(1+r, n) - 1) / r) * (1 + r);
+    if (!denom || !isFinite(denom)) return 0;
+    return target / denom;
+  }
+  suggestBtn.addEventListener('click', () => {
+    const tgt = parseFloat(targetAmt.value || '0');
+    const ar = parseFloat(rateInput.value || '0.1');
+    const yrs = parseInt(yearsInput.value || '5');
+    if (!tgt || tgt <= 0){ suggestOut.textContent = 'Enter a target amount'; return; }
+    const m = suggestSipMonthly(tgt, ar, yrs);
+    const rounded = Math.max(100, Math.round(m/100)*100);
+    sipInput.value = String(rounded);
+    suggestOut.textContent = `Try ₹${rounded.toLocaleString('en-IN')}/month`;
+  });
+
+  // Decision Coach chart
+  try {
+    const cy = JSON.parse('{{ coach_years_json|default:"[]"|escapejs }}');
+    const cv = JSON.parse('{{ coach_values_json|default:"[]"|escapejs }}');
+    if (Array.isArray(cy) && Array.isArray(cv) && cy.length && cv.length){
+      new Chart(document.getElementById('coachWhatIfChart'), {
+        type: 'line',
+        data: {
+          labels: cy,
+          datasets: [{
+            label: 'What-if FV (₹)',
+            data: cv,
+            borderColor: '#0ea5e9',
+            backgroundColor: 'rgba(14,165,233,0.15)',
+            fill: true,
+            tension: .25
+          }]
+        },
+        options: {
+          plugins:{legend:{labels:{color:'#393D45'}}},
+          scales:{
+            x:{ticks:{color:'#393D45'}},
+            y:{ticks:{color:'#393D45'}}
+          }
+        }
+      });
+    }
+  } catch(e) {}
+  // Apply width from data-width attributes for progress bars
+  document.querySelectorAll('[data-width]').forEach(el=>{
+    const v = parseFloat(el.getAttribute('data-width')||'0');
+    if (!isNaN(v)) el.style.width = Math.max(0, Math.min(100, v)) + '%';
+  });
+})();
+</script>
+{% endblock %}

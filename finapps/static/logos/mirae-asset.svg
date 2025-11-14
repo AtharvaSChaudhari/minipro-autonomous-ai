@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-label="Mirae Asset">
+  <rect width="128" height="128" rx="16" fill="#111827"/>
+  <rect x="8" y="8" width="112" height="112" rx="12" fill="#ffffff" opacity="0.06"/>
+  <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="700" font-size="16" fill="#ffffff">Mirae</text>
+</svg>
